@@ -9,20 +9,57 @@
 		// TODO aliasList should be of a list-like type!
 		this.aliasList = ko.observable('');
 
-		// Is the data currently loaded or saved?
+		// Is the data currently loaded, checked or saved?
 		this.loading = ko.observable(false);
+		this.checking = ko.observable(false);
 		this.saving = ko.observable(false);
 
-		// calculated func for the above question.
-		this.savingOrLoading = ko.computed(function () {
-			return this.loading() || this.saving();
+		// calculated funcs for different questions
+		// can the data currently be saved?
+		this.savingDisabled = ko.computed(function () {
+			return this.loading() || this.checking() || this.saving();
+		}, this);
+		// can the data currently be checked?
+		this.checkingDisabled = this.savingDisabled;
+		// can the data currently be changed?
+		this.changingEnabled = ko.computed(function () {
+			return !this.loading() && !this.checking() && !this.saving();
 		}, this);
 	}
 
-	AliasListSettings.prototype.customAjaxSaveData = function () {
+	AliasListSettings.prototype.checkAliasList = function () {
 		var self = this;
 
-		if (this.saving()) {
+		if (this.checkingDisabled()) {
+			return false;
+		}
+
+		this.checking(true);
+
+		window.rl.pluginRemoteRequest(function (sResult, oData) {
+
+			self.checking(false);
+
+			if (window.rl.Enums.StorageResultType.Success === sResult && oData && oData.Result)
+			{
+				// call was successful
+				// TODO now display the answer
+			}
+			else
+			{
+				// call failed
+				// TODO
+			}
+
+		}, 'AjaxCheckAliasListData', {
+			'AliasList': this.aliasList()
+		});
+	};
+
+	AliasListSettings.prototype.saveAliasList = function () {
+		var self = this;
+
+		if (this.savingDisabled()) {
 			return false;
 		}
 
@@ -34,14 +71,16 @@
 
 			if (window.rl.Enums.StorageResultType.Success === sResult && oData && oData.Result)
 			{
-				// save was successful
+				// call was successful
+				// TODO display an answer if necessary
 			}
 			else
 			{
-				// save failed
+				// call failed
+				// TODO
 			}
 
-		}, 'AjaxSaveCustomUserData', {
+		}, 'AjaxSaveAliasListData', {
 			'AliasList': this.aliasList()
 		});
 	};
@@ -60,7 +99,7 @@
 				self.aliasList(oData.Result.AliasList || '');
 			}
 
-		}, 'AjaxGetCustomUserData');
+		}, 'AjaxLoadAliasListData');
 
 	};
 
