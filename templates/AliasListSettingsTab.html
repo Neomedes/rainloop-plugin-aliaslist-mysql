@@ -1,0 +1,34 @@
+<div>
+	<div class="form-horizontal">
+		<div class="legend">
+			<span class="i18n" data-i18n="ALIAS_LIST_SETTINGS_PLUGIN/LEGEND_CUSTOM"></span>
+			&nbsp;&nbsp;&nbsp;
+			<i class="icon-spinner animated" style="margin-top: 5px" data-bind="visible: loading"></i>
+		</div>
+		<div class="control-group">
+			<label class="control-label">
+				<span class="i18n" data-i18n="ALIAS_LIST_SETTINGS_PLUGIN/LABEL_ALIAS_LIST"></span>
+			</label>
+			<div class="controls">
+		        <div data-bind="component: {
+						name: 'TextArea',
+						params: { value: aliasList, enable: !savingDisabled(), placeholder: 'ALIAS_LIST_SETTINGS_PLUGIN/ALIAS_LIST_PLACEHOLDER' }
+					}"></div>
+			</div>
+		</div>
+		<div class="control-group">
+			<div class="controls">
+				<button class="btn" data-bind="click: checkAliasList, enable: !checkingDisabled()">
+					<i data-bind="css: {'icon-eye': !checking, 'icon-spinner animated': checking}" class="icon-eye"></i>
+					&nbsp;&nbsp;
+					<span class="i18n" data-i18n="ALIAS_LIST_SETTINGS_PLUGIN/BUTTON_CHECK"></span>
+				</button>
+				<button class="btn" data-bind="click: saveAliasList, enable: !savingDisabled()">
+					<i data-bind="css: {'icon-floppy': !saving, 'icon-spinner animated': saving}" class="icon-floppy"></i>
+					&nbsp;&nbsp;
+					<span class="i18n" data-i18n="ALIAS_LIST_SETTINGS_PLUGIN/BUTTON_SAVE"></span>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
