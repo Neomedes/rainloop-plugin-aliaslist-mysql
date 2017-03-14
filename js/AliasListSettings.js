@@ -65,6 +65,6 @@
 	};
 
 	window.rl.addSettingsViewModel(AliasListSettings, 'AliasListSettingsTab',
-		'ALIAS_LIST_SETTINGS/TAB_NAME', 'alias_list');
+		'ALIAS_LIST_SETTINGS_PLUGIN/TAB_NAME', 'alias_list');
 
 }());
