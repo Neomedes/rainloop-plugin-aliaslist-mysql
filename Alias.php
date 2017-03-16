@@ -1,15 +1,6 @@
 <?php
 
 class Alias {
-	/**
-	 * @var int
-	 */
-	private $nId;
-
-	/**
-	 * @var string
-	 */
-	private $sEmailFor;
 
 	/**
 	 * @var string
@@ -22,12 +13,11 @@ class Alias {
 	private $sEmailAliasDomain;
 
 	/**
-	 * @param string $sEmailFor
+	 * @param string $sEmailAlias
 	 *
 	 * @return \ChangeAliasListDriver
 	 */
-	public function __construct($sEmailFor, $sEmailAlias) {
-		$this->sEmailFor = $sEmailFor;
+	public function __construct($sEmailAlias) {
 		$aliasParts = splitEmail($sEmailAlias);
 		$this->sEmailAliasUser = $aliasParts['user'];
 		$this->sEmailAliasDomain = $aliasParts['domain'];
@@ -63,40 +53,6 @@ class Alias {
 			return $sEmailUser
 		}
 		return implode('@', array($sEmailUser, $sEmailDomain));
-	}
-
-	/**
-	 * @param int $nId
-	 *
-	 * @return \Alias
-	 */
-	public function SetId($nId) {
-		$this->nId = $nId;
-		return $this;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function GetId() {
-		return $this->nId;
-	}
-
-	/**
-	 * @param string $sEmailFor
-	 *
-	 * @return \Alias
-	 */
-	public function SetEmailFor($sEmailFor) {
-		$this->sEmailFor = $sEmailFor;
-		return $this;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function GetEmailFor() {
-		return $this->sEmailFor;
 	}
 
 	/**
