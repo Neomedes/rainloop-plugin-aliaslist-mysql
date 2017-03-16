@@ -18,6 +18,23 @@ class CustomSettingsTabPlugin extends \RainLoop\Plugins\AbstractPlugin
 	}
 
 	/**
+	 * @return string
+	 */
+	public function Supported()
+	{
+		if (!extension_loaded('pdo') || !class_exists('PDO'))
+		{
+			return 'The PHP exention PDO (mysql) must be installed to use this plugin';
+		}
+		$aDrivers = \PDO::getAvailableDrivers();
+		if (!is_array($aDrivers) || !in_array('mysql', $aDrivers))
+		{
+			return 'The PHP exention PDO (mysql) must be installed to use this plugin';
+		}
+		return '';
+	}
+
+	/**
 	 * @return array
 	 */
 	public function AjaxLoadAliasListData()
