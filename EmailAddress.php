@@ -24,6 +24,17 @@ class EmailAddress {
 	}
 	
 	/**
+	 * @param string $sEmailUser
+	 * @param string $sEmailDomain
+	 *
+	 * @return \EmailAddress
+	 */
+	public function __construct($sEmailUser, $sEmailDomain) {
+		$this->sUser = $sEmailUser;
+		$this->sDomain = $sEmailDomain;
+	}
+	
+	/**
 	 * @var string $sEmailAddress
 	 *
 	 * @return array
@@ -88,7 +99,14 @@ class EmailAddress {
 	public function GetDomain() {
 		return $this->sDomain;
 	}
-
+	
+	/**
+	 * @return string
+	 */
+	public function GetFullAddress() {
+		return EmailAddress::joinEmail($this->sUser, $this->sDomain);
+	}
+	
 }
 
 ?>
