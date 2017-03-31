@@ -196,6 +196,16 @@ class ChangeAliasListDriver {
 	}
 
 	/**
+	* @param string $sColumnEnabled
+	*
+	* @return \ChangeAliasListDriver
+	*/
+	public function SetColumnEnabled($sColumnEnabled) {
+		$this->sColumnEnabled = $sColumnEnabled;
+		return $this;
+	}
+
+	/**
 	 * @param \RainLoop\Model\Account $oAccount
 	 *
 	 * @return bool
