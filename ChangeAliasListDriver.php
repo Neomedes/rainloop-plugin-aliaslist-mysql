@@ -218,9 +218,7 @@ class ChangeAliasListDriver {
 		$sResult = '';
 
 		if (0 < \count($aAliasList)) {
-			$aEmail = Alias::splitEmail($oAccount->Email());
-			$sUsername = $aEmail['user'];
-			$sDomain = $aEmail['domain'];
+			$oEmail = new EmailAddress($oAccount->Email());
 
 			try {
 				$sDsn = 'mysql:host='.$this->sHost.';port='.$this->iPort.';dbname='.$this->sDatabase;
@@ -228,10 +226,10 @@ class ChangeAliasListDriver {
 				$oPdo = new \PDO($sDsn, $this->sUser, $this->sPassword);
 				$oPdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-				// Statement for deleting current alias list
+				// Statement for deleting current alias list / marking all as disabled
 				{
 					$oStmt = $oPdo->prepare("UPDATE {$this->sTable} SET {$this->sColumnEnabled} = false WHERE {$this->sColumnDestinationUser} = ? AND {$this->sColumnDestinationDomain} = ? ");
-					$bResult = (bool) $oStmt->execute(array($sUsername, $sDomain));
+					$bResult = (bool) $oStmt->execute(array($oEmail->GetUser(), $oEmail->GetDomain()));
 				}
 
 				// saving new aliases
@@ -241,7 +239,7 @@ class ChangeAliasListDriver {
 
 					$nSuccessfullyUpdated = 0;
 					for( $a = 0 ; $a < \count($aAliasList) ; ++$a ) {
-						$bResult = $oStmt->execute(array($aAliasList[$a].GetEmailAliasUser(), $aAliasList[$a].GetEmailAliasDomain(), $sUsername, $sDomain));
+						$bResult = $oStmt->execute(array($aAliasList[$a].GetUser(), $aAliasList[$a].GetDomain(), $oEmail->GetUser(), $oEmail->GetDomain()));
 						if ( $bResult ) {
 							$nSuccessfullyUpdated++;
 						}
