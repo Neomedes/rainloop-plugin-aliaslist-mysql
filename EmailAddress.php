@@ -1,26 +1,26 @@
 <?php
 
-class Alias {
+class EmailAddress {
 
 	/**
 	 * @var string
 	 */
-	private $sEmailAliasUser;
+	private $sUser;
 
 	/**
 	 * @var string
 	 */
-	private $sEmailAliasDomain;
+	private $sDomain;
 
 	/**
-	 * @param string $sEmailAlias
+	 * @param string $sEmailAddress
 	 *
-	 * @return \ChangeAliasListDriver
+	 * @return \EmailAddress
 	 */
-	public function __construct($sEmailAlias) {
-		$aliasParts = splitEmail($sEmailAlias);
-		$this->sEmailAliasUser = $aliasParts['user'];
-		$this->sEmailAliasDomain = $aliasParts['domain'];
+	public function __construct($sEmailAddress) {
+		$parts = splitEmail($sEmailAddress);
+		$this->sUser = $parts['user'];
+		$this->sDomain = $parts['domain'];
 	}
 	
 	/**
@@ -50,43 +50,43 @@ class Alias {
 	 */
 	public static function joinEmail($sEmailUser, $sEmailDomain) {
 		if($sEmailDomain === null || strlen($sEmailDomain) < 1) {
-			return $sEmailUser
+			return $sEmailUser;
 		}
 		return implode('@', array($sEmailUser, $sEmailDomain));
 	}
 
 	/**
-	 * @param string $sEmailAliasUser
+	 * @param string $sUser
 	 *
-	 * @return \Alias
+	 * @return \EmailAddress
 	 */
-	public function SetEmailAliasUser($sEmailAliasUser) {
-		$this->sEmailAliasUser = $sEmailAliasUser;
+	public function SetUser($sUser) {
+		$this->sUser = $sUser;
 		return $this;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function GetEmailAliasUser() {
-		return $this->sEmailAliasUser;
+	public function GetUser() {
+		return $this->sUser;
 	}
 
 	/**
-	 * @param string $sEmailAliasDomain
+	 * @param string $sDomain
 	 *
-	 * @return \Alias
+	 * @return \EmailAddress
 	 */
-	public function SetEmailAliasDomain($sEmailAliasDomain) {
-		$this->sEmailAliasDomain = $sEmailAliasDomain;
+	public function SetDomain($sDomain) {
+		$this->sDomain = $sDomain;
 		return $this;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function GetEmailAliasDomain() {
-		return $this->sEmailAliasDomain;
+	public function GetDomain() {
+		return $this->sDomain;
 	}
 
 }
