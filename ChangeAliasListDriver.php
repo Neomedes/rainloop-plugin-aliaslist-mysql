@@ -213,6 +213,60 @@ class ChangeAliasListDriver {
 	public function ChangeAliasListPossibility($oAccount) {
 		return $oAccount && $oAccount->Email();
 	}
+	
+	/**
+	 * @return \PDO
+	 */
+	private function openDatabaseConnection() {
+		$sDsn = 'mysql:host='.$this->sHost.';port='.$this->iPort.';dbname='.$this->sDatabase;
+
+		$oPdo = new \PDO($sDsn, $this->sUser, $this->sPassword);
+		$oPdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+
+		return $oPdo;
+	}
+
+	/**
+	 * @param \RainLoop\Model\Account $oAccount
+	 *
+	 * @return array
+	 */
+	public function LoadAliasList(\RainLoop\Account $oAccount) {
+		if ($this->oLogger) {
+			$this->oLogger->Write('AliasList: Try to load alias list for '.$oAccount->Email());
+		}
+
+		$aResult = array();
+		$oEmail = new EmailAddress($oAccount->Email());
+
+		try {
+			$oPdo = $this->openDatabaseConnection();
+
+			// loading aliases
+			{
+				$oStmt = $oPdo->prepare("SELECT {$this->sColumnSourceUser}, {$this->sColumnSourceDomain}
+FROM {$this->sTable}
+WHERE {$this->sColumnDestinationUser} = ?
+AND   {$this->sColumnDestinationDomain} = ?
+AND   {$this->sColumnEnabled} = true");
+				$oStmt->execute(array($oEmail->GetUser(), $oEmail->GetDomain()));
+
+				$aFields = $oStmt->fetchAll();
+				for($a = 0; $a < \count($aFields); $a++) {
+					$aResult[] = new EmailAddress($aFields[$a][0], $aFields[$a][1]);
+				}
+			}
+
+			$oPdo = null;
+		}
+		catch (\Exception $oException) {
+			if ($this->oLogger) {
+				$this->oLogger->WriteException($oException);
+			}
+		}
+
+		return $aResult;
+	}
 
 	/**
 	 * @param \RainLoop\Model\Account $oAccount
@@ -220,7 +274,7 @@ class ChangeAliasListDriver {
 	 *
 	 * @return string
 	 */
-	public function saveAliasList(\RainLoop\Account $oAccount, $aAliasList) {
+	public function SaveAliasList(\RainLoop\Account $oAccount, $aAliasList) {
 		if ($this->oLogger) {
 			$this->oLogger->Write('AliasList: Try to save alias list for '.$oAccount->Email());
 		}
@@ -231,10 +285,7 @@ class ChangeAliasListDriver {
 			$oEmail = new EmailAddress($oAccount->Email());
 
 			try {
-				$sDsn = 'mysql:host='.$this->sHost.';port='.$this->iPort.';dbname='.$this->sDatabase;
-
-				$oPdo = new \PDO($sDsn, $this->sUser, $this->sPassword);
-				$oPdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+				$oPdo = $this->openDatabaseConnection();
 
 				// Statement for deleting current alias list / marking all as disabled
 				{
@@ -271,7 +322,7 @@ class ChangeAliasListDriver {
 			}
 		}
 
-		return $bResult;
+		return $sResult;
 	}
 }
 
