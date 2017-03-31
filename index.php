@@ -5,8 +5,7 @@ class CustomSettingsTabPlugin extends \RainLoop\Plugins\AbstractPlugin
 	/**
 	 * @return void
 	 */
-	public function Init()
-	{
+	public function Init() {
 		$this->UseLangs(true); // start use langs folder
 
 		$this->addJs('js/AliasListSettings.js'); // add js file
@@ -20,8 +19,7 @@ class CustomSettingsTabPlugin extends \RainLoop\Plugins\AbstractPlugin
 	/**
 	 * @return string
 	 */
-	public function Supported()
-	{
+	public function Supported() {
 		if (!extension_loaded('pdo') || !class_exists('PDO'))
 		{
 			return 'The PHP exention PDO (mysql) must be installed to use this plugin';
@@ -33,15 +31,51 @@ class CustomSettingsTabPlugin extends \RainLoop\Plugins\AbstractPlugin
 		}
 		return '';
 	}
+	
+	/**
+	 * @return \ChangeAliasListDriver
+	 */
+	private function openConnection() {
+		return new ChangeAliasListDriver()
+			->SetHost($this->Config()->Get('plugin', 'host', ''))
+			->SetDomain($this->Config()->Get('plugin', 'port', 3306))
+			->SetDatabase($this->Config()->Get('plugin', 'database', 3306))
+			->SetTable($this->Config()->Get('plugin', 'table', 3306))
+			->SetUser($this->Config()->Get('plugin', 'user', 3306))
+			->SetPassword($this->Config()->Get('plugin', 'password', 3306))
+			->SetColumnId($this->Config()->Get('plugin', 'column_id', 3306))
+			->SetColumnSourceUser($this->Config()->Get('plugin', 'column_src_user', 3306))
+			->SetColumnSourceDomain($this->Config()->Get('plugin', 'column_src_domain', 3306))
+			->SetColumnDestinationUser($this->Config()->Get('plugin', 'column_dest_user', 3306))
+			->SetColumnDestinationDomain($this->Config()->Get('plugin', 'column_dest_domain', 3306))
+			->SetColumnEnabled($this->Config()->Get('plugin', 'column_enabled', 3306));
+	}
+	
+	private function getAccount() {
+		$oManager = $this->Manager();
+		if($oManager === null) {
+			return null;
+		}
+		$oActions = $oManager->Actions();
+		if($oActions === null) {
+			return null;
+		}
+		return $oActions->getAccount();
+	}
 
 	/**
 	 * @return array
 	 */
-	public function AjaxLoadAliasListData()
-	{
-		// TODO get user's data from DB
-		$sAliasList = '';
+	public function AjaxLoadAliasListData() {
+		$aAliasList = $this->openConnection()->LoadAliasList($this->getAccount());
 
+		$aAliasAddressList = array();
+		for($a = 0; $a < \count($aAliasList); $a++) {
+			$aAliasAddressList[] = $aAliasList[$a].GetFullAddress();
+		}
+		
+		$sAliases = \implode("\n", $aAliasAddressList);
+		
 		\sleep(1);
 		return $this->ajaxResponse(__FUNCTION__, array(
 			'AliasList' => $sAliasList
@@ -51,20 +85,16 @@ class CustomSettingsTabPlugin extends \RainLoop\Plugins\AbstractPlugin
 	/**
 	 * @return array
 	 */
-	private function splitAliasList($sAliasList) {
-		// TODO return array of splitted data
-	}
-	
-	/**
-	 * @return array
-	 */
-	public function AjaxSaveAliasListData()
-	{
-		$sAliasList = $this->ajaxParam('AliasList');
-		$aAliasList = splitAliasList($sAliasList);
-
-		// TODO save alias list to db and retrieve possible error message
-		$sResponse = '';
+	public function AjaxSaveAliasListData() {
+		$sAliases = $this->ajaxParam('AliasList');
+		$aAliasAddressList = \explode("\n", $sAliases);
+		
+		$aAliasList = array();
+		for($a = 0; $a < \count($aAliasAddressList); $a++) {
+			$aAliasList[] = new EmailAddress($aAliasAddressList[$a]);
+		}
+		
+		$sResponse = $this->openConnection()->SaveAliasList($this->getAccount(), $aAliasList);
 		
 		\sleep(1);
 		return $this->ajaxResponse(__FUNCTION__, array(
@@ -72,6 +102,39 @@ class CustomSettingsTabPlugin extends \RainLoop\Plugins\AbstractPlugin
 		));
 	}
 
+	/**
+	 * @return array
+	 */
+	public function configMapping() {
+		return array(
+			\RainLoop\Plugins\Property::NewInstance('host')->SetLabel('MySQL Host')
+				->SetDefaultValue('127.0.0.1'),
+			\RainLoop\Plugins\Property::NewInstance('port')->SetLabel('MySQL Port')
+				->SetType(\RainLoop\Enumerations\PluginPropertyType::INT)
+				->SetDefaultValue(3306),
+			\RainLoop\Plugins\Property::NewInstance('database')->SetLabel('MySQL Database')
+				->SetDefaultValue('aliasdb'),
+			\RainLoop\Plugins\Property::NewInstance('table')->SetLabel('MySQL table')
+				->SetDefaultValue('aliases'),
+			\RainLoop\Plugins\Property::NewInstance('user')->SetLabel('MySQL User')
+				->SetDefaultValue('aliasuser'),
+			\RainLoop\Plugins\Property::NewInstance('password')->SetLabel('MySQL Password')
+				->SetType(\RainLoop\Enumerations\PluginPropertyType::PASSWORD)
+				->SetDefaultValue(''),
+			\RainLoop\Plugins\Property::NewInstance('column_id')->SetLabel('ID column')
+				->SetDefaultValue('id'),
+			\RainLoop\Plugins\Property::NewInstance('column_src_user')->SetLabel('Source user column')
+				->SetDefaultValue('source_username'),
+			\RainLoop\Plugins\Property::NewInstance('column_src_domain')->SetLabel('Source domain column')
+				->SetDefaultValue('source_domain'),
+			\RainLoop\Plugins\Property::NewInstance('column_dest_user')->SetLabel('Destination user column')
+				->SetDefaultValue('destination_username'),
+			\RainLoop\Plugins\Property::NewInstance('column_dest_domain')->SetLabel('Destination domain column')
+				->SetDefaultValue('destination_domain'),
+			\RainLoop\Plugins\Property::NewInstance('column_enabled')->SetLabel('Enabled column')
+				->SetDefaultValue('enabled')
+		);
+	}
 }
 
 ?>
