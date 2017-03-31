@@ -39,16 +39,16 @@ class CustomSettingsTabPlugin extends \RainLoop\Plugins\AbstractPlugin
 		return new ChangeAliasListDriver()
 			->SetHost($this->Config()->Get('plugin', 'host', ''))
 			->SetDomain($this->Config()->Get('plugin', 'port', 3306))
-			->SetDatabase($this->Config()->Get('plugin', 'database', 3306))
-			->SetTable($this->Config()->Get('plugin', 'table', 3306))
-			->SetUser($this->Config()->Get('plugin', 'user', 3306))
-			->SetPassword($this->Config()->Get('plugin', 'password', 3306))
-			->SetColumnId($this->Config()->Get('plugin', 'column_id', 3306))
-			->SetColumnSourceUser($this->Config()->Get('plugin', 'column_src_user', 3306))
-			->SetColumnSourceDomain($this->Config()->Get('plugin', 'column_src_domain', 3306))
-			->SetColumnDestinationUser($this->Config()->Get('plugin', 'column_dest_user', 3306))
-			->SetColumnDestinationDomain($this->Config()->Get('plugin', 'column_dest_domain', 3306))
-			->SetColumnEnabled($this->Config()->Get('plugin', 'column_enabled', 3306));
+			->SetDatabase($this->Config()->Get('plugin', 'database', ''))
+			->SetTable($this->Config()->Get('plugin', 'table', ''))
+			->SetUser($this->Config()->Get('plugin', 'user', ''))
+			->SetPassword($this->Config()->Get('plugin', 'password', ''))
+			->SetColumnId($this->Config()->Get('plugin', 'column_id', ''))
+			->SetColumnSourceUser($this->Config()->Get('plugin', 'column_src_user', ''))
+			->SetColumnSourceDomain($this->Config()->Get('plugin', 'column_src_domain', ''))
+			->SetColumnDestinationUser($this->Config()->Get('plugin', 'column_dest_user', ''))
+			->SetColumnDestinationDomain($this->Config()->Get('plugin', 'column_dest_domain', ''))
+			->SetColumnEnabled($this->Config()->Get('plugin', 'column_enabled', ''));
 	}
 	
 	private function getAccount() {
