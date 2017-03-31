@@ -36,7 +36,8 @@ class CustomSettingsTabPlugin extends \RainLoop\Plugins\AbstractPlugin
 	 * @return \ChangeAliasListDriver
 	 */
 	private function openConnection() {
-		return new ChangeAliasListDriver()
+		$oDriver = new ChangeAliasListDriver();
+		return $oDriver
 			->SetHost($this->Config()->Get('plugin', 'host', ''))
 			->SetDomain($this->Config()->Get('plugin', 'port', 3306))
 			->SetDatabase($this->Config()->Get('plugin', 'database', ''))
