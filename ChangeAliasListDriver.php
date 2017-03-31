@@ -84,6 +84,34 @@ class ChangeAliasListDriver {
 
 		return $this;
 	}
+	
+	/**
+	 * @param string $sMessage
+	 * @param int $nLevel
+	 */
+	private function log($sMessage, $nLevel) {
+		if ($this->oLogger) {
+			$this->oLogger->Write($sMessage, $nLevel);
+		}
+	}
+	
+	/**
+	 * @param string $sMessage
+	 */
+	private function log($sMessage) {
+		if ($this->oLogger) {
+			$this->oLogger->Write($sMessage);
+		}
+	}
+
+	/**
+	 * @param \Exception $oException
+	 */
+	private function logException($oException) {
+		if ($this->oLogger) {
+			$this->oLogger->WriteException($oException);
+		}
+	}
 
 	/**
 	 * @param string $sHost
@@ -232,9 +260,12 @@ class ChangeAliasListDriver {
 	 * @return array
 	 */
 	public function LoadAliasList(\RainLoop\Account $oAccount) {
-		if ($this->oLogger) {
-			$this->oLogger->Write('AliasList: Try to load alias list for '.$oAccount->Email());
+		if($oAccount === null) {
+			$this->log('AliasList: Unknown account!',
+				   \MailSo\Log\Enumerations\Type::ERROR);
+			return array();
 		}
+		$this->log('AliasList: Try to load alias list for '.$oAccount->Email());
 
 		$aResult = array();
 		$oEmail = new EmailAddress($oAccount->Email());
@@ -260,9 +291,7 @@ AND   {$this->sColumnEnabled} = true");
 			$oPdo = null;
 		}
 		catch (\Exception $oException) {
-			if ($this->oLogger) {
-				$this->oLogger->WriteException($oException);
-			}
+			$this->logException($oException);
 		}
 
 		return $aResult;
@@ -275,51 +304,43 @@ AND   {$this->sColumnEnabled} = true");
 	 * @return string
 	 */
 	public function SaveAliasList(\RainLoop\Account $oAccount, $aAliasList) {
-		if ($this->oLogger) {
-			$this->oLogger->Write('AliasList: Try to save alias list for '.$oAccount->Email());
+		if($oAccount === null) {
+			$this->log('AliasList: Unknown account!',
+				   \MailSo\Log\Enumerations\Type::ERROR);
+			return array();
 		}
+		$this->log('AliasList: Try to save alias list for '.$oAccount->Email());
 
 		$sResult = '';
+		$oEmail = new EmailAddress($oAccount->Email());
 
-		if (0 < \count($aAliasList)) {
-			$oEmail = new EmailAddress($oAccount->Email());
+		try {
+			$oPdo = $this->openDatabaseConnection();
 
-			try {
-				$oPdo = $this->openDatabaseConnection();
+			// Statement for deleting current alias list / marking all as disabled
+			{
+				$oStmt = $oPdo->prepare("UPDATE {$this->sTable} SET {$this->sColumnEnabled} = false WHERE {$this->sColumnDestinationUser} = ? AND {$this->sColumnDestinationDomain} = ? ");
+				$bResult = (bool) $oStmt->execute(array($oEmail->GetUser(), $oEmail->GetDomain()));
+			}
 
-				// Statement for deleting current alias list / marking all as disabled
-				{
-					$oStmt = $oPdo->prepare("UPDATE {$this->sTable} SET {$this->sColumnEnabled} = false WHERE {$this->sColumnDestinationUser} = ? AND {$this->sColumnDestinationDomain} = ? ");
-					$bResult = (bool) $oStmt->execute(array($oEmail->GetUser(), $oEmail->GetDomain()));
-				}
+			// saving new aliases
+			{
+				$oStmt = $oPdo->prepare("INSERT INTO {$this->sTable} ({$this->sColumnSourceUser}, {$this->sColumnSourceDomain}, {$this->sColumnDestinationUser}, {$this->sColumnDestinationDomain}, {$this->sColumnEnabled}) values (?, ?, ?, ?, true)
+				 ON DUPLICATE KEY UPDATE {$this->sColumnEnabled} = true");
 
-				// saving new aliases
-				{
-					$oStmt = $oPdo->prepare("INSERT INTO {$this->sTable} ({$this->sColumnSourceUser}, {$this->sColumnSourceDomain}, {$this->sColumnDestinationUser}, {$this->sColumnDestinationDomain}, {$this->sColumnEnabled}) values (?, ?, ?, ?, true)
-					 ON DUPLICATE KEY UPDATE {$this->sColumnEnabled} = true");
-
-					$nSuccessfullyUpdated = 0;
-					for( $a = 0 ; $a < \count($aAliasList) ; ++$a ) {
-						$bResult = $oStmt->execute(array($aAliasList[$a].GetUser(), $aAliasList[$a].GetDomain(), $oEmail->GetUser(), $oEmail->GetDomain()));
-						if ( $bResult ) {
-							$nSuccessfullyUpdated++;
-						}
+				$nSuccessfullyUpdated = 0;
+				for( $a = 0 ; $a < \count($aAliasList) ; ++$a ) {
+					$bResult = $oStmt->execute(array($aAliasList[$a].GetUser(), $aAliasList[$a].GetDomain(), $oEmail->GetUser(), $oEmail->GetDomain()));
+					if ( $bResult ) {
+						$nSuccessfullyUpdated++;
 					}
 				}
+			}
 
-				$oPdo = null;
-			}
-			catch (\Exception $oException) {
-				if ($this->oLogger) {
-					$this->oLogger->WriteException($oException);
-				}
-			}
+			$oPdo = null;
 		}
-		else {
-			if ($this->oLogger) {
-				$this->oLogger->Write('AliasList: Alias list is empty',
-					\MailSo\Log\Enumerations\Type::WARNING);
-			}
+		catch (\Exception $oException) {
+			$this->logException($oException);
 		}
 
 		return $sResult;
