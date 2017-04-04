@@ -11,49 +11,35 @@
 
 		// Is the data currently loaded, checked or saved?
 		this.loading = ko.observable(false);
-		this.checking = ko.observable(false);
 		this.saving = ko.observable(false);
 
 		// calculated funcs for different questions
 		// can the data currently be saved?
 		this.savingDisabled = ko.computed(function () {
-			return this.loading() || this.checking() || this.saving();
+			return this.loading() || this.saving();
 		}, this);
-		// can the data currently be checked?
-		this.checkingDisabled = this.savingDisabled;
+		// can the data currently be loaded?
+		this.loadingDisabled = this.savingDisabled;
 		// can the data currently be changed?
 		this.changingEnabled = ko.computed(function () {
-			return !this.loading() && !this.checking() && !this.saving();
+			return !this.loading() && !this.saving();
 		}, this);
 	}
 
-	AliasListSettings.prototype.checkAliasList = function () {
+	AliasListSettings.prototype.loadAliasList = function () {
 		var self = this;
 
-		if (this.checkingDisabled()) {
-			return false;
-		}
-
-		this.checking(true);
+		this.loading(true);
 
 		window.rl.pluginRemoteRequest(function (sResult, oData) {
 
-			self.checking(false);
-
-			if (window.rl.Enums.StorageResultType.Success === sResult && oData && oData.Result)
-			{
-				// call was successful
-				// TODO now display the answer
-			}
-			else
-			{
-				// call failed
-				// TODO
+			self.loading(false);
+			console.log('result: '+sResult+', data: '+oData);
+			if (window.rl.Enums.StorageResultType.Success === sResult && oData && oData.Result) {
+				self.aliasList(oData.Result.AliasList || '');
 			}
 
-		}, 'AjaxCheckAliasListData', {
-			'AliasList': this.aliasList()
-		});
+		}, 'AjaxLoadAliasListData');
 	};
 
 	AliasListSettings.prototype.saveAliasList = function () {
@@ -87,23 +73,12 @@
 
 	// special function
 	AliasListSettings.prototype.onBuild = function () {
-		var self = this;
-
-		this.loading(true);
-
-		window.rl.pluginRemoteRequest(function (sResult, oData) {
-
-			self.loading(false);
-
-			if (window.rl.Enums.StorageResultType.Success === sResult && oData && oData.Result) {
-				self.aliasList(oData.Result.AliasList || '');
-			}
-
-		}, 'AjaxLoadAliasListData');
-
+		this.loadAliasList();
 	};
-
-	window.rl.addSettingsViewModel(AliasListSettings, 'AliasListSettingsTab',
-		'ALIAS_LIST_SETTINGS_PLUGIN/TAB_NAME', 'alias_list');
+	
+	{
+		window.rl.addSettingsViewModel(AliasListSettings, 'AliasListSettingsTab',
+			'ALIAS_LIST_SETTINGS_PLUGIN/TAB_NAME', 'alias_list');
+	}
 
 }());

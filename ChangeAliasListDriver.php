@@ -87,20 +87,15 @@ class ChangeAliasListDriver {
 	
 	/**
 	 * @param string $sMessage
-	 * @param int $nLevel
+	 * @param int $iType
+	 * @param string $sName
+	 * @param bool $bSearchSecretWords
+	 * @param bool $bDisplayCrLf
 	 */
-	private function log($sMessage, $nLevel) {
+	private function log($sMessage, $iType = \MailSo\Log\Enumerations\Type::INFO,
+		$sName = '', $bSearchSecretWords = true, $bDisplayCrLf = false) {
 		if ($this->oLogger) {
-			$this->oLogger->Write($sMessage, $nLevel);
-		}
-	}
-	
-	/**
-	 * @param string $sMessage
-	 */
-	private function log($sMessage) {
-		if ($this->oLogger) {
-			$this->oLogger->Write($sMessage);
+			$this->oLogger->Write($sMessage, $iType, $sName, $bSearchSecretWords, $bDisplayCrLf);
 		}
 	}
 
@@ -268,6 +263,7 @@ class ChangeAliasListDriver {
 		$this->log('AliasList: Try to load alias list for '.$oAccount->Email());
 
 		$aResult = array();
+		include_once __DIR__.'/EmailAddress.php';
 		$oEmail = new EmailAddress($oAccount->Email());
 
 		try {
@@ -312,6 +308,7 @@ AND   {$this->sColumnEnabled} = true");
 		$this->log('AliasList: Try to save alias list for '.$oAccount->Email());
 
 		$sResult = '';
+		include_once __DIR__.'/EmailAddress.php';
 		$oEmail = new EmailAddress($oAccount->Email());
 
 		try {
@@ -330,7 +327,11 @@ AND   {$this->sColumnEnabled} = true");
 
 				$nSuccessfullyUpdated = 0;
 				for( $a = 0 ; $a < \count($aAliasList) ; ++$a ) {
-					$bResult = $oStmt->execute(array($aAliasList[$a].GetUser(), $aAliasList[$a].GetDomain(), $oEmail->GetUser(), $oEmail->GetDomain()));
+					$bResult = $oStmt->execute(array(
+							$aAliasList[$a]->GetUser(),
+							$aAliasList[$a]->GetDomain(),
+							$oEmail->GetUser(),
+							$oEmail->GetDomain()));
 					if ( $bResult ) {
 						$nSuccessfullyUpdated++;
 					}

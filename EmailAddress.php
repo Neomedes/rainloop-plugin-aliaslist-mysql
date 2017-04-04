@@ -13,25 +13,23 @@ class EmailAddress {
 	private $sDomain;
 
 	/**
-	 * @param string $sEmailAddress
-	 *
-	 * @return \EmailAddress
-	 */
-	public function __construct($sEmailAddress) {
-		$parts = splitEmail($sEmailAddress);
-		$this->sUser = $parts['user'];
-		$this->sDomain = $parts['domain'];
-	}
-	
-	/**
 	 * @param string $sEmailUser
 	 * @param string $sEmailDomain
 	 *
 	 * @return \EmailAddress
 	 */
-	public function __construct($sEmailUser, $sEmailDomain) {
-		$this->sUser = $sEmailUser;
-		$this->sDomain = $sEmailDomain;
+	public function __construct($sEmailFullAddressOrUser, $sEmailDomain = null) {
+		if ( $sEmailDomain === null ) {
+			// first parameter is full address
+			$parts = EmailAddress::splitEmail($sEmailFullAddressOrUser);
+        	        $this->sUser = $parts['user'];
+	                $this->sDomain = $parts['domain'];
+		}
+		else {
+			// full address is only user
+			$this->sUser = $sEmailFullAddressOrUser;
+			$this->sDomain = $sEmailDomain;
+		}
 	}
 	
 	/**
@@ -46,7 +44,7 @@ class EmailAddress {
 				'domain' => null
 			);
 		}
-		$parts = explode('@', $sEmailAddress, 1);
+		$parts = explode('@', $sEmailAddress, 2);
 		return array(
 			'user' => $parts[0],
 			'domain' => $parts[1]

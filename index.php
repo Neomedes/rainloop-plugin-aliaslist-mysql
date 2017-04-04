@@ -1,6 +1,6 @@
 <?php
 
-class CustomSettingsTabPlugin extends \RainLoop\Plugins\AbstractPlugin
+class AliaslistMysqlPlugin extends \RainLoop\Plugins\AbstractPlugin
 {
 	/**
 	 * @return void
@@ -36,10 +36,11 @@ class CustomSettingsTabPlugin extends \RainLoop\Plugins\AbstractPlugin
 	 * @return \ChangeAliasListDriver
 	 */
 	private function openConnection() {
+	include_once __DIR__.'/ChangeAliasListDriver.php';
 		$oDriver = new ChangeAliasListDriver();
 		return $oDriver
 			->SetHost($this->Config()->Get('plugin', 'host', ''))
-			->SetDomain($this->Config()->Get('plugin', 'port', 3306))
+			->SetPort($this->Config()->Get('plugin', 'port', 3306))
 			->SetDatabase($this->Config()->Get('plugin', 'database', ''))
 			->SetTable($this->Config()->Get('plugin', 'table', ''))
 			->SetUser($this->Config()->Get('plugin', 'user', ''))
@@ -49,7 +50,8 @@ class CustomSettingsTabPlugin extends \RainLoop\Plugins\AbstractPlugin
 			->SetColumnSourceDomain($this->Config()->Get('plugin', 'column_src_domain', ''))
 			->SetColumnDestinationUser($this->Config()->Get('plugin', 'column_dest_user', ''))
 			->SetColumnDestinationDomain($this->Config()->Get('plugin', 'column_dest_domain', ''))
-			->SetColumnEnabled($this->Config()->Get('plugin', 'column_enabled', ''));
+			->SetColumnEnabled($this->Config()->Get('plugin', 'column_enabled', ''))
+			->SetLogger($this->Manager()->Actions()->Logger());
 	}
 	
 	private function getAccount() {
@@ -72,14 +74,14 @@ class CustomSettingsTabPlugin extends \RainLoop\Plugins\AbstractPlugin
 
 		$aAliasAddressList = array();
 		for($a = 0; $a < \count($aAliasList); $a++) {
-			$aAliasAddressList[] = $aAliasList[$a].GetFullAddress();
+			$aAliasAddressList[] = $aAliasList[$a]->GetFullAddress();
 		}
 		
 		$sAliases = \implode("\n", $aAliasAddressList);
 		
 		\sleep(1);
 		return $this->ajaxResponse(__FUNCTION__, array(
-			'AliasList' => $sAliasList
+			'AliasList' => $sAliases
 		));
 	}
 	
@@ -91,6 +93,7 @@ class CustomSettingsTabPlugin extends \RainLoop\Plugins\AbstractPlugin
 		$aAliasAddressList = \explode("\n", $sAliases);
 		
 		$aAliasList = array();
+include_once __DIR__.'/EmailAddress.php';
 		for($a = 0; $a < \count($aAliasAddressList); $a++) {
 			$aAliasList[] = new EmailAddress($aAliasAddressList[$a]);
 		}

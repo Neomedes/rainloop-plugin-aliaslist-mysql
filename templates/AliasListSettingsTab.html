@@ -12,16 +12,21 @@
 			<div class="controls">
 		        <div data-bind="component: {
 						name: 'TextArea',
-						params: { value: aliasList, enable: changingEnabled(), placeholder: 'ALIAS_LIST_SETTINGS_PLUGIN/ALIAS_LIST_PLACEHOLDER' }
+						params: {
+							value: aliasList,
+							enable: changingEnabled(),
+							placeholder: 'user<at>brueggmann.name
+admin<at>neomedes.de'
+						}
 					}"></div>
 			</div>
 		</div>
 		<div class="control-group">
 			<div class="controls">
-				<button class="btn" data-bind="click: checkAliasList, enable: !checkingDisabled()">
-					<i data-bind="css: {'icon-eye': !checking, 'icon-spinner animated': checking}" class="icon-eye"></i>
+				<button class="btn" data-bind="click: loadAliasList, enable: !loadingDisabled()">
+					<i data-bind="css: {'icon-eye': !loading, 'icon-spinner animated': loading}" class="icon-eye"></i>
 					&nbsp;&nbsp;
-					<span class="i18n" data-i18n="ALIAS_LIST_SETTINGS_PLUGIN/BUTTON_CHECK"></span>
+					<span class="i18n" data-i18n="ALIAS_LIST_SETTINGS_PLUGIN/BUTTON_LOAD"></span>
 				</button>
 				<button class="btn" data-bind="click: saveAliasList, enable: !savingDisabled()">
 					<i data-bind="css: {'icon-floppy': !saving, 'icon-spinner animated': saving}" class="icon-floppy"></i>
